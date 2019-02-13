@@ -1,0 +1,11 @@
+C:\src\GHC2019\bin\Debug\netcoreapp2.1\GHC2019.deps.json
+C:\src\GHC2019\bin\Debug\netcoreapp2.1\GHC2019.runtimeconfig.json
+C:\src\GHC2019\bin\Debug\netcoreapp2.1\GHC2019.runtimeconfig.dev.json
+C:\src\GHC2019\bin\Debug\netcoreapp2.1\GHC2019.dll
+C:\src\GHC2019\bin\Debug\netcoreapp2.1\GHC2019.pdb
+C:\src\GHC2019\obj\Debug\netcoreapp2.1\GHC2019.csprojAssemblyReference.cache
+C:\src\GHC2019\obj\Debug\netcoreapp2.1\GHC2019.csproj.CoreCompileInputs.cache
+C:\src\GHC2019\obj\Debug\netcoreapp2.1\GHC2019.AssemblyInfoInputs.cache
+C:\src\GHC2019\obj\Debug\netcoreapp2.1\GHC2019.AssemblyInfo.cs
+C:\src\GHC2019\obj\Debug\netcoreapp2.1\GHC2019.dll
+C:\src\GHC2019\obj\Debug\netcoreapp2.1\GHC2019.pdb
