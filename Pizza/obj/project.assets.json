@@ -695,11 +695,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\src\\GHC2019\\GHC2019.csproj",
+      "projectUniqueName": "c:\\src\\GHC2019\\Pizza\\GHC2019.csproj",
       "projectName": "GHC2019",
-      "projectPath": "C:\\src\\GHC2019\\GHC2019.csproj",
+      "projectPath": "c:\\src\\GHC2019\\Pizza\\GHC2019.csproj",
       "packagesPath": "C:\\Users\\maartenc\\.nuget\\packages\\",
-      "outputPath": "C:\\src\\GHC2019\\obj\\",
+      "outputPath": "c:\\src\\GHC2019\\Pizza\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

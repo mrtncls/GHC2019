@@ -1,0 +1,11 @@
+C:\src\GHC2019\Slideshow\bin\Debug\netcoreapp2.1\Slideshow.deps.json
+C:\src\GHC2019\Slideshow\bin\Debug\netcoreapp2.1\Slideshow.runtimeconfig.json
+C:\src\GHC2019\Slideshow\bin\Debug\netcoreapp2.1\Slideshow.runtimeconfig.dev.json
+C:\src\GHC2019\Slideshow\bin\Debug\netcoreapp2.1\Slideshow.dll
+C:\src\GHC2019\Slideshow\bin\Debug\netcoreapp2.1\Slideshow.pdb
+C:\src\GHC2019\Slideshow\obj\Debug\netcoreapp2.1\Slideshow.csprojAssemblyReference.cache
+C:\src\GHC2019\Slideshow\obj\Debug\netcoreapp2.1\Slideshow.csproj.CoreCompileInputs.cache
+C:\src\GHC2019\Slideshow\obj\Debug\netcoreapp2.1\Slideshow.AssemblyInfoInputs.cache
+C:\src\GHC2019\Slideshow\obj\Debug\netcoreapp2.1\Slideshow.AssemblyInfo.cs
+C:\src\GHC2019\Slideshow\obj\Debug\netcoreapp2.1\Slideshow.dll
+C:\src\GHC2019\Slideshow\obj\Debug\netcoreapp2.1\Slideshow.pdb
