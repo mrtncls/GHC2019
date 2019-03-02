@@ -29,19 +29,28 @@ namespace GHC2019
             public int Index { get; set; }
             public bool IsVertical { get; set; }
             public string[] Tags { get; set; }
-        }
+            public int[] HashedTags { get; set; }
 
-        private class PhotoMapped
-        {
-            public int Index { get; set; }
-            public bool IsVertical { get; set; }
-            public int[] Tags { get; set; }
         }
 
         private class Slide
         {
-            public PhotoMapped[] photos { get; set; }
-            public int[] Tags { get; set; }
+            public Slide(Photo horizontal)
+            {
+                photos = new Photo[] { horizontal };
+                HashedTags = horizontal.HashedTags;
+                ResultString = horizontal.Index.ToString();
+            }
+            public Slide(Photo vertical1, Photo vertical2)
+            {
+                photos = new Photo[] { vertical1, vertical2 };
+                HashedTags = vertical1.HashedTags.Concat(vertical2.HashedTags).Distinct().ToArray();
+                Array.Sort(HashedTags);
+                ResultString = $"{vertical1.Index} {vertical2.Index}";
+            }
+            public string ResultString { get; set; }
+            public Photo[] photos { get; set; }
+            public int[] HashedTags { get; set; }
         }
 
         private class Score
@@ -61,13 +70,22 @@ namespace GHC2019
             var lines = File.ReadAllLines(input);
 
             Photos = ReadLinesIntoArray(lines);
-            var mappedPhotos = MapPhotos(Photos);
 
-            Slides = TransformToSlides(mappedPhotos);
+            Console.WriteLine($"Processing {Photos.Length} photo's...");
 
-            var resultSlides = MakeGreedySlideshow(Slides);
+            HashTags();
 
-            string result = CreateResultString(resultSlides);
+            Console.WriteLine($"Tags hashed. Creating slides...");
+
+            TransformToSlides();
+
+            Console.WriteLine($"Sorting {Slides.Length} slides...");
+
+            MakeGreedySlideshow();
+
+            Console.WriteLine($"Writing {Slides.Length} slides to outputfile...");
+
+            string result = CreateResultString();
 
             WriteResult(result, Path.GetFileName(fileName));
 
@@ -77,47 +95,65 @@ namespace GHC2019
             Console.WriteLine("-----------------------");
         }
 
-        private static Slide[] MakeGreedySlideshow(Slide[] inputSlides)
+        private static void MakeGreedySlideshow()
         {
-            var inputList = inputSlides.ToList();
+            int totalScore = 0;
+
+            Console.WriteLine($"Sorting by tags...");
+
+            Slides = Slides.OrderByDescending(s => s.HashedTags.Length).ToArray();
+
+            var inputList = Slides.ToList();
             var result = new List<Slide>();
+
+            Console.WriteLine($"Comparing tags...");
 
             result.Add(inputList[0]);
             inputList.RemoveAt(0);
 
             while (inputList.Any())
             {
-                var batch = inputList.Take(Math.Min(1000, inputList.Count)).ToList();
+                var batch = inputList.Take(Math.Min(3000, inputList.Count)).ToList();
+                int batchSize = batch.Count;
 
-                while (batch.Any())
+                while (batch.Count > batchSize / 2)
                 {
-                    Slide nextSlide = null;
                     Slide currentSlide = result.Last();
 
-                    int maxScore = ScoreSlides(currentSlide, batch[0]);
-                    int i = 1;
-                    for (; i < batch.Count; i++)
-                    {
+                    Slide nextSlide = batch[0];
+                    int maxScore = ScoreSlides(currentSlide, nextSlide);
+
+                    for (int i = 1; i < batch.Count; i++)
+                    {                        
                         int score = ScoreSlides(currentSlide, batch[i]);
                         if (maxScore < score)
                         {
+                            nextSlide = batch[i];
                             maxScore = score;
-                            if (maxScore >= (int)(currentSlide.Tags.Length / 2))
+                            if (maxScore >= (int)(currentSlide.HashedTags.Length / 2))
                                 break;
-                        };
+                        }
+                        else if (maxScore >= (int)(batch[i].HashedTags.Length / 2))
+                        {
+                            break;
+                        }
                     }
 
-                    nextSlide = batch[i - 1];
+                    totalScore += maxScore;
 
                     result.Add(nextSlide);
                     batch.Remove(nextSlide);
-                    inputList.Remove(nextSlide);
+                    inputList.Remove(nextSlide);                    
 
-                    Console.WriteLine($"{inputList.Count()} to go...");
+                    //Console.WriteLine($"Score: {totalScore} | {inputList.Count()} slides to sort...");
                 }
+
+                Console.WriteLine($"Score: {totalScore} | {inputList.Count()} slides to sort...");
             }
 
-            return result.ToArray();
+            Console.WriteLine($"Score: {totalScore} | {inputList.Count()} slides to sort...");
+
+            Slides = result.ToArray();
         }
 
         private static int ScoreSlides(Slide current, Slide other)
@@ -126,19 +162,19 @@ namespace GHC2019
             int i = 0;
             int j = 0;
 
-            if (current.Tags[current.Tags.Length - 1] < other.Tags[0]
-            || other.Tags[other.Tags.Length - 1] < current.Tags[0])
+            if (current.HashedTags[current.HashedTags.Length - 1] < other.HashedTags[0]
+            || other.HashedTags[other.HashedTags.Length - 1] < current.HashedTags[0])
                 return 0;
 
-            while (i < current.Tags.Length && j < other.Tags.Length)
+            while (i < current.HashedTags.Length && j < other.HashedTags.Length)
             {
-                if (current.Tags[i] == other.Tags[j])
+                if (current.HashedTags[i] == other.HashedTags[j])
                 {
                     equalCount++;
                     i++;
                     j++;
                 }
-                else if (current.Tags[i] > other.Tags[j])
+                else if (current.HashedTags[i] > other.HashedTags[j])
                 {
                     j++;
                 }
@@ -148,7 +184,7 @@ namespace GHC2019
                 }
             }
 
-            return Math.Min(equalCount, Math.Min(current.Tags.Length - equalCount, other.Tags.Length - equalCount));
+            return Math.Min(equalCount, Math.Min(current.HashedTags.Length - equalCount, other.HashedTags.Length - equalCount));
         }
 
 
@@ -172,77 +208,75 @@ namespace GHC2019
             return photos;
         }
 
-        private static Slide[] TransformToSlides(PhotoMapped[] photos)
+        private static void TransformToSlides()
         {
-            PhotoMapped previousVertical = null;
+            Photo previousVertical = null;
             var slides = new List<Slide>();
-            for (int i = 0; i < photos.Length; i++)
+            for (int i = 0; i < Photos.Length; i++)
             {
-                if (photos[i].IsVertical)
+                var photo = Photos[i];
+
+                if (photo.IsVertical)
                 {
                     if (previousVertical != null)
                     {
-                        slides.Add(new Slide
-                        {
-                            photos = new PhotoMapped[] { previousVertical, photos[i] },
-                            Tags = previousVertical.Tags.Concat(photos[i].Tags).Distinct().ToArray()
-                        });
+                        slides.Add(new Slide(previousVertical, photo));
                         previousVertical = null;
                     }
                     else
                     {
-                        previousVertical = photos[i];
+                        previousVertical = photo;
                     }
                 }
                 else
                 {
-                    slides.Add(new Slide
-                    {
-                        photos = new PhotoMapped[] { photos[i] },
-                        Tags = photos[i].Tags
-                    });
+                    slides.Add(new Slide(photo));
                 }
             }
 
-            return slides.ToArray();
+            Slides = slides.ToArray();
         }
-        private static PhotoMapped[] MapPhotos(Photo[] photos)
+        private static void HashTags()
         {
-            var dictionary = new Dictionary<string, int>();
-            var index = 0;
-            var result = new PhotoMapped[photos.Length];
-            foreach (var photo in photos)
+            int totalTags = 0;
+
+            var tagHashMap = new Dictionary<string, int>();
+            var nextHash = 0;
+
+            for (int i = 0; i < Photos.Length; i++)
             {
-                foreach (var tag in photo.Tags)
+                var photo = Photos[i];
+
+                totalTags += Photos[i].Tags.Length;
+
+                photo.HashedTags = new int[photo.Tags.Length];
+
+                for (int j = 0; j < photo.Tags.Length; j++)
                 {
-                    if (!dictionary.ContainsKey(tag))
-                    {
-                        dictionary.Add(tag, index);
-                        index++;
-                    }
-                }
+                    var tag = photo.Tags[j];
+
+                    if (!tagHashMap.ContainsKey(tag))
+                        tagHashMap.Add(tag, nextHash++);
+
+                    photo.HashedTags[j] = tagHashMap[tag];
+                }       
+
+                Array.Sort(photo.HashedTags);
             }
 
-            result = photos.Select(photo => new PhotoMapped
-            {
-                Index = photo.Index,
-                IsVertical = photo.IsVertical,
-                Tags = photo.Tags.Select(tag => dictionary[tag]).OrderBy(x => x).ToArray()
-            }).ToArray();
-
-
-            return result;
+            Console.WriteLine($"Found {totalTags} tags of which {tagHashMap.Keys.Count} are unique");
         }
 
-        private static string CreateResultString(Slide[] slides)
+        private static string CreateResultString()
         {
-            string result = $"{Slides.Count()}{Environment.NewLine}";
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"{Slides.Length}{Environment.NewLine}");
             foreach (var slide in Slides)
             {
-                result = $"{result}{string.Join(" ", slide.photos.Select(p => p.Index))}{Environment.NewLine}";
+                sb.Append($"{slide.ResultString}{Environment.NewLine}");
             }
 
-            return result;
+            return sb.ToString();
         }
 
         private static void WriteResult(string output, string fileName)
